@@ -15,6 +15,8 @@ class DirectoryWalker:
         self._json_method_tuples = []
         self._list_of_json_class_files = []
         self._json_class_tuples = []
+        self._list_of_json_enum_files = []
+        self._json_enum_tuples = []
 
     @property
     def list_of_files(self):
@@ -89,6 +91,21 @@ class DirectoryWalker:
         self._json_class_tuples = values
 
     @property
+    def list_of_json_enum_files(self):
+        return self._list_of_json_enum_files
+
+    @list_of_json_enum_files.setter
+    def list_of_json_enum_files(self, values):
+        self._list_of_json_enum_files = values
+
+    @property
+    def json_enum_tuples(self):
+        return self._json_enum_tuples
+
+    @json_enum_tuples.setter
+    def json_enum_tuples(self, values):
+        self._json_enum_tuples = values
+    @property
     def json_tuples(self):
         return self._json_tuples
 
@@ -112,3 +129,5 @@ class DirectoryWalker:
             self._json_method_tuples = json_tuple
         elif type == "class":
             self._json_class_tuples = json_tuple
+        elif type == "enum":
+            self._json_enum_tuples = json_tuple

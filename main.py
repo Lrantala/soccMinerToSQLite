@@ -57,8 +57,8 @@ if __name__ == '__main__':
                         directory_walker.list_of_json_files.append(single_json)
                     elif "Method_Category" in single_json:
                         directory_walker.list_of_json_method_files.append(single_json)
-                    #elif "Class_Signature" in single_json:
-                    #    directory_walker.list_of_json_class_files.append(single_json)
+                    elif "Enum_Signature" in single_json:
+                        directory_walker.list_of_json_enum_files.append(single_json)
 
         # Cleaning up classfiles
         directory_walker.list_of_json_class_files = [x for x in directory_walker.list_of_json_class_files if
@@ -85,6 +85,14 @@ if __name__ == '__main__':
         directory_walker.list_of_json_method_files = []
         # Writing the results into a db
         sq3writer.insert_many_methods_from_soccminer_to_db(values=directory_walker.json_method_tuples)
+
+        # Cleaning up enumfiles
+        directory_walker.list_of_json_enum_files = [x for x in directory_walker.list_of_json_enum_files if isinstance(x, dict)]
+        directory_walker.list_of_json_enum_files = [x for x in directory_walker.list_of_json_enum_files if len(x) == 6]
+        directory_walker.dict_to_tuple(dictionary=directory_walker.list_of_json_enum_files, type="enum")
+        directory_walker.list_of_json_enum_files = []
+        # Writing the results into a db
+        sq3writer.insert_many_enums_from_soccminer_to_db(values=directory_walker.json_enum_tuples)
 
     elif analyzer == "pmd":
         with open(args.pmddir, 'r') as f:

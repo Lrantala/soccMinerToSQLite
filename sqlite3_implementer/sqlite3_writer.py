@@ -64,6 +64,15 @@ class SqliteWriter():
                     "Class_Type text)")
         self._connection.commit()
 
+        cur.execute("CREATE TABLE if NOT EXISTS enum(enum_key integer PRIMARY KEY AUTOINCREMENT,"
+                    "Enum_LOC int,"
+                    "Enum_Line_No int,"
+                    "Enum_Name text,"
+                    "Enum_Signature text,"
+                    "Enum_Source_File text,"
+                    "Enum_Specifier text)")
+        self._connection.commit()
+
         cur.execute("CREATE TABLE if NOT EXISTS pmd(pmd_key integer PRIMARY KEY AUTOINCREMENT,"
                     "Filename text,"
                     "Begin_Line int,"
@@ -148,7 +157,7 @@ class SqliteWriter():
         self.close_connection()
 
     def insert_many_methods_from_soccminer_to_db(self, values):
-        logging.info("Writing many comments to db %s", (self._db_name,))
+        logging.info("Writing many methods to db %s", (self._db_name,))
         cur = self.connect_to_db().cursor()
         # cur.executemany("INSERT into comments VALUES (?,?,?,?,?,?,?,?,?,?,?)", values)
         try:
@@ -168,8 +177,25 @@ class SqliteWriter():
             print(e)
         self.close_connection()
 
+    def insert_many_enums_from_soccminer_to_db(self, values):
+        logging.info("Writing many enums to db %s", (self._db_name,))
+        cur = self.connect_to_db().cursor()
+        # cur.executemany("INSERT into comments VALUES (?,?,?,?,?,?,?,?,?,?,?)", values)
+        try:
+            cur.executemany(
+                "INSERT into enum(Enum_LOC,"
+                "Enum_Line_No,"
+                "Enum_Name,"
+                "Enum_Signature,"
+                "Enum_Source_File,"
+                "Enum_Specifier) VALUES (?,?,?,?,?,?)",
+                values)
+            self._connection.commit()
+        except Exception as e:
+            print(e)
+        self.close_connection()
     def insert_many_classes_from_soccminer_to_db(self, values):
-        logging.info("Writing many comments to db %s", (self._db_name,))
+        logging.info("Writing many classes to db %s", (self._db_name,))
         cur = self.connect_to_db().cursor()
         # cur.executemany("INSERT into comments VALUES (?,?,?,?,?,?,?,?,?,?,?)", values)
         try:
