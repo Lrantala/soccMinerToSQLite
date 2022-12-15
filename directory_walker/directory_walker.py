@@ -13,6 +13,8 @@ class DirectoryWalker:
         self._list_of_json_method_files = []
         self._json_tuples = []
         self._json_method_tuples = []
+        self._list_of_json_class_files = []
+        self._json_class_tuples = []
 
     @property
     def list_of_files(self):
@@ -71,6 +73,22 @@ class DirectoryWalker:
         self._json_method_tuples = values
 
     @property
+    def list_of_json_class_files(self):
+        return self._list_of_json_class_files
+
+    @list_of_json_class_files.setter
+    def list_of_json_class_files(self, values):
+        self._list_of_json_class_files = values
+
+    @property
+    def json_class_tuples(self):
+        return self._json_class_tuples
+
+    @json_class_tuples.setter
+    def json_class_tuples(self, values):
+        self._json_class_tuples = values
+
+    @property
     def json_tuples(self):
         return self._json_tuples
 
@@ -92,3 +110,5 @@ class DirectoryWalker:
             self._json_tuples = json_tuple
         elif type == "method":
             self._json_method_tuples = json_tuple
+        elif type == "class":
+            self._json_class_tuples = json_tuple
