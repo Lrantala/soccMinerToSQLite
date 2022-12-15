@@ -40,9 +40,34 @@ class SqliteWriter():
                     "Comment_Succeeding_Node text,"
                     "Comment_Type text)")
         self._connection.commit()
+
+        cur.execute("CREATE TABLE if NOT EXISTS methods(method_key integer PRIMARY KEY AUTOINCREMENT,"
+                    "Method_Category text,"
+                    "Method_LOC int,"
+                    "Method_Line_No int,"
+                    "Method_Name text,"
+                    "Method_Param_Count int,"
+                    "Method_Signature text,"
+                    "Method_Source_File text,"
+                    "Method_Specifier text,"
+                    "Method_Type text)")
+        self._connection.commit()
+
+        cur.execute("CREATE TABLE if NOT EXISTS pmd(pmd_key integer PRIMARY KEY AUTOINCREMENT,"
+                    "Filename text,"
+                    "Begin_Line int,"
+                    "Begin_Column int,"
+                    "End_Line int,"
+                    "End_Column int,"
+                    "Description text,"
+                    "Rule text,"
+                    "Rule_Set text,"
+                    "Priority integer,"
+                    "External_Info_Url text)")
+        self._connection.commit()
         self.close_connection()
 
-    def insert_json_from_file_to_db(self, datafile=None):
+    def insert_single_comment_from_soccminer_to_db(self, datafile=None):
         logging.info("Reading a json to dictionary %s", datafile)
         cur = self.connect_to_db().cursor()
         cur.execute('INSERT INTO comments (Comment_Assoc_Block_Node,'
@@ -82,7 +107,7 @@ class SqliteWriter():
         self._connection.commit()
         self.close_connection()
 
-    def insert_many_json_from_file_to_db(self, values):
+    def insert_many_comments_from_soccminer_to_db(self, values):
         logging.info("Writing many comments to db %s", (self._db_name,))
         cur = self.connect_to_db().cursor()
         # cur.executemany("INSERT into comments VALUES (?,?,?,?,?,?,?,?,?,?,?)", values)
@@ -110,3 +135,56 @@ class SqliteWriter():
         except Exception as e:
             print(e)
         self.close_connection()
+
+    def insert_many_methods_from_soccminer_to_db(self, values):
+        logging.info("Writing many comments to db %s", (self._db_name,))
+        cur = self.connect_to_db().cursor()
+        # cur.executemany("INSERT into comments VALUES (?,?,?,?,?,?,?,?,?,?,?)", values)
+        try:
+            cur.executemany(
+                "INSERT into methods(Method_Category,"
+                "Method_LOC,"
+                "Method_Line_No,"
+                "Method_Name,"
+                "Method_Param_Count,"
+                "Method_Signature,"
+                "Method_Source_File,"
+                "Method_Specifier,"
+                "Method_Type) VALUES (?,?,?,?,?,?,?,?,?)",
+                values)
+            self._connection.commit()
+        except Exception as e:
+            print(e)
+        self.close_connection()
+
+
+    def insert_many_json_from_pmd_to_db(self, values):
+        logging.info("Writing many comments to db %s", (self._db_name,))
+        cur = self.connect_to_db().cursor()
+            # cur.executemany("INSERT into comments VALUES (?,?,?,?,?,?,?,?,?,?,?)", values)
+        try:
+            cur.executemany(
+                "INSERT into comments(Comment_Assoc_Block_Node,"
+                "Comment_Category,"
+                "Comment_Content,"
+                "Comment_First_Element_In,"
+                "Comment_Immediate_Preceding_Code,"
+                "Comment_Immediate_Succeeding_Code,"
+                "Comment_Last_Element_In,"
+                "Comment_Level,"
+                "Comment_Line_No,"
+                "Comment_Parent_Identifier,"
+                "Comment_Parent_Trace,"
+                "Comment_Preceding_Node,"
+                "Comment_Source_File,"
+                "Comment_SubCategory,"
+                "Comment_SubCatg_Type,"
+                "Comment_Succeeding_Node,"
+                "Comment_Type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                values)
+            self._connection.commit()
+        except Exception as e:
+            print(e)
+        self.close_connection()
+
+

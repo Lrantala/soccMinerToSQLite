@@ -46,15 +46,29 @@ if __name__ == '__main__':
         for file_location in directory_walker.list_of_dir_files:
             with open(file_location, 'r') as f:
                 single_json = json.load(f)
-                directory_walker.list_of_json_files.extend(single_json)
+                if "Comment_Category" in single_json:
+                    directory_walker.list_of_json_files.append(single_json)
+                elif "Method_Category" in single_json:
+                    directory_walker.list_of_json_method_files.append(single_json)
 
         # Cleaning up the unnecessasry json-data files, keeping only the ones with the comments.
         directory_walker.list_of_json_files = [x for x in directory_walker.list_of_json_files if isinstance(x, dict)]
         directory_walker.list_of_json_files = [x for x in directory_walker.list_of_json_files if len(x) == 17]
-        directory_walker.dict_to_tuple(dictionary=directory_walker.list_of_json_files)
+        directory_walker.dict_to_tuple(dictionary=directory_walker.list_of_json_files, type="comment")
+        directory_walker.list_of_json_files = []
 
         # Writing the results into a db
-        sq3writer.insert_many_json_from_file_to_db(values=directory_walker.json_tuples)
+        sq3writer.insert_many_comments_from_soccminer_to_db(values=directory_walker.json_tuples)
+
+        # Cleaning up methodfiles
+        directory_walker.list_of_json_method_files = [x for x in directory_walker.list_of_json_method_files if isinstance(x, dict)]
+        directory_walker.list_of_json_method_files = [x for x in directory_walker.list_of_json_method_files if len(x) == 9]
+        directory_walker.dict_to_tuple(dictionary=directory_walker.list_of_json_method_files, type="method")
+        directory_walker.list_of_json_method_files = []
+
+        # Writing the results into a db
+        sq3writer.insert_many_methods_from_soccminer_to_db(values=directory_walker.json_method_tuples)
+
     elif analyzer == "pmd":
         with open(args.pmddir, 'r') as f:
             single_json = json.load(f)

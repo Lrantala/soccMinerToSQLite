@@ -10,7 +10,9 @@ class DirectoryWalker:
         self._list_of_dir_files = []
         self._path_to_dir = ""
         self._list_of_json_files = []
+        self._list_of_json_method_files = []
         self._json_tuples = []
+        self._json_method_tuples = []
 
     @property
     def list_of_files(self):
@@ -53,6 +55,22 @@ class DirectoryWalker:
         self._list_of_json_files = values
 
     @property
+    def list_of_json_method_files(self):
+        return self._list_of_json_method_files
+
+    @list_of_json_method_files.setter
+    def list_of_json_method_files(self, values):
+        self._list_of_json_method_files = values
+
+    @property
+    def json_method_tuples(self):
+        return self._json_method_tuples
+
+    @json_method_tuples.setter
+    def json_method_tuples(self, values):
+        self._json_method_tuples = values
+
+    @property
     def json_tuples(self):
         return self._json_tuples
 
@@ -68,6 +86,9 @@ class DirectoryWalker:
                     self.list_of_dirs.append(dirpath)
                     self.list_of_dir_files.append(path.join(dirpath, filename))
 
-    def dict_to_tuple(self, dictionary):
+    def dict_to_tuple(self, dictionary, type):
         json_tuple = [tuple(d.values()) for d in dictionary]
-        self._json_tuples = json_tuple
+        if type == "comment":
+            self._json_tuples = json_tuple
+        elif type == "method":
+            self._json_method_tuples = json_tuple
