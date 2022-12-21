@@ -57,20 +57,29 @@ if __name__ == '__main__':
             else:
                 with open(file_location, 'r') as f:
                     single_json = json.load(f)
-                    if "Comment_Category" in single_json:
-                        directory_walker.list_of_json_files.append(single_json)
-                    elif "Method_Category" in single_json:
-                        directory_walker.list_of_json_method_files.append(single_json)
-                    elif "Enum_Signature" in single_json:
-                        directory_walker.list_of_json_enum_files.append(single_json)
-                    elif "File_Comments_Count" in single_json:
-                        directory_walker.list_of_json_file_files.append(single_json)
-                    elif "Interface_Signature" in single_json:
-                        directory_walker.list_of_json_interface_files.append(single_json)
-                    elif "Package_Serialization_File_URL" in single_json:
-                        directory_walker.list_of_json_package_files.append(single_json)
-                    elif "Static_Block_Source_File" in single_json:
-                        directory_walker.list_of_json_staticblock_files.append(single_json)
+                    if not isinstance(single_json, dict):
+                        first_in_single_json = single_json[0]
+                        if "Comment_Category" in first_in_single_json:
+                            for item in single_json:
+                                directory_walker.list_of_json_files.append(item)
+                        elif "Method_Category" in first_in_single_json:
+                            for item in single_json:
+                                directory_walker.list_of_json_method_files.append(item)
+                        elif "Enum_Signature" in first_in_single_json:
+                            for item in single_json:
+                                directory_walker.list_of_json_enum_files.append(item)
+                        elif "File_Comments_Count" in first_in_single_json:
+                            for item in single_json:
+                                directory_walker.list_of_json_file_files.append(item)
+                        elif "Interface_Signature" in first_in_single_json:
+                            for item in single_json:
+                                directory_walker.list_of_json_interface_files.append(item)
+                        elif "Package_Serialization_File_URL" in first_in_single_json:
+                            for item in single_json:
+                                directory_walker.list_of_json_package_files.append(item)
+                        elif "Static_Block_Source_File" in first_in_single_json:
+                            for item in single_json:
+                                directory_walker.list_of_json_staticblock_files.append(item)
 
         # Cleaning up the unnecessasry json-data files, keeping only the ones with the comments.
         directory_walker.list_of_json_files = [x for x in directory_walker.list_of_json_files if isinstance(x, dict)]
@@ -146,7 +155,7 @@ if __name__ == '__main__':
         project_name = args.pmdproject
         # Change the filenames to match the style in soccminer
         tuple_list_of_pmd_info = []
-        sq3writer.check_available_pmd_project_id()
+        sq3writer.check_available_project_id(analyzer="pmd")
         pmd_project_id = sq3writer.pmd_project_id
         logging.info("Starting to read PMD files")
         for individual_file in pmd_list_of_files:

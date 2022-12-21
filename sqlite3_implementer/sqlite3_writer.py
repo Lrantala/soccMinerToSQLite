@@ -5,6 +5,7 @@ import sqlite3
 class SqliteWriter():
     def __init__(self):
         self.pmd_project_id = None
+        self.socc_project_id = None
         self._db_name = "./save/soccminer.db"
         self._connection = None
 
@@ -234,7 +235,7 @@ class SqliteWriter():
         # cur.executemany("INSERT into comments VALUES (?,?,?,?,?,?,?,?,?,?,?)", values)
         try:
             cur.executemany(
-                "INSERT into enum(File_Comments_Count,"
+                "INSERT into file(File_Comments_Count,"
                 "File_LOC,"
                 "Source_File) VALUES (?,?,?)",
                 values)
@@ -298,7 +299,7 @@ class SqliteWriter():
         cur = self.connect_to_db().cursor()
         # cur.executemany("INSERT into comments VALUES (?,?,?,?,?,?,?,?,?,?,?)", values)
         try:
-            cur.executemany("INSERT into package(Static_Block_LOC,"
+            cur.executemany("INSERT into staticblock(Static_Block_LOC,"
                             "Static_Block_Line_No,"
                             "Static_Block_Source_File) VALUES (?,?,?)""", values)
             self._connection.commit()
@@ -330,13 +331,23 @@ class SqliteWriter():
             print(e)
         self.close_connection()
 
-    def check_available_pmd_project_id(self):
+    def check_available_project_id(self, analyzer):
         logging.info("Checking what is the latest project id number")
         cur = self.connect_to_db().cursor()
-        id_number_tuples = [id_number[0] for id_number in cur.execute("SELECT Project_ID FROM pmd")]
-        if id_number_tuples:
-            last_id = max(id_number_tuples)
-            last_id += 1
-            self.pmd_project_id = last_id
+        if analyzer == "pmd":
+            id_number_tuples = [id_number[0] for id_number in cur.execute("SELECT Project_ID FROM pmd")]
+            if id_number_tuples:
+                last_id = max(id_number_tuples)
+                last_id += 1
+                self.pmd_project_id = last_id
+            else:
+                self.pmd_project_id = 1
         else:
-            self.pmd_project_id = 1
+            id_number_tuples = [id_number[0] for id_number in cur.execute("SELECT Project_ID FROM pmd")]
+            if id_number_tuples:
+                last_id = max(id_number_tuples)
+                last_id += 1
+                self.pmd_project_id = last_id
+            else:
+                self.pmd_project_id = 1
+
