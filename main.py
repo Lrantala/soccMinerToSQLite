@@ -59,6 +59,22 @@ if __name__ == '__main__':
                         directory_walker.list_of_json_method_files.append(single_json)
                     elif "Enum_Signature" in single_json:
                         directory_walker.list_of_json_enum_files.append(single_json)
+                    elif "File_Comments_Count" in single_json:
+                        directory_walker.list_of_json_file_files.append(single_json)
+                    elif "Interface_Signature" in single_json:
+                        directory_walker.list_of_json_interface_files.append(single_json)
+                    elif "Package_Serialization_File_URL" in single_json:
+                        directory_walker.list_of_json_package_files.append(single_json)
+                    elif "Static_Block_Source_File" in single_json:
+                        directory_walker.list_of_json_staticblock_files.append(single_json)
+
+        # Cleaning up the unnecessasry json-data files, keeping only the ones with the comments.
+        directory_walker.list_of_json_files = [x for x in directory_walker.list_of_json_files if isinstance(x, dict)]
+        directory_walker.list_of_json_files = [x for x in directory_walker.list_of_json_files if len(x) == 17]
+        directory_walker.dict_to_tuple(dictionary=directory_walker.list_of_json_files, type="comment")
+        directory_walker.list_of_json_files = []
+        # Writing the results into a db
+        sq3writer.insert_many_comments_from_soccminer_to_db(values=directory_walker.json_tuples)
 
         # Cleaning up classfiles
         directory_walker.list_of_json_class_files = [x for x in directory_walker.list_of_json_class_files if
@@ -69,14 +85,6 @@ if __name__ == '__main__':
         directory_walker.list_of_json_class_files = []
         # Writing the results into a db
         sq3writer.insert_many_classes_from_soccminer_to_db(values=directory_walker.json_class_tuples)
-
-        # Cleaning up the unnecessasry json-data files, keeping only the ones with the comments.
-        directory_walker.list_of_json_files = [x for x in directory_walker.list_of_json_files if isinstance(x, dict)]
-        directory_walker.list_of_json_files = [x for x in directory_walker.list_of_json_files if len(x) == 17]
-        directory_walker.dict_to_tuple(dictionary=directory_walker.list_of_json_files, type="comment")
-        directory_walker.list_of_json_files = []
-        # Writing the results into a db
-        sq3writer.insert_many_comments_from_soccminer_to_db(values=directory_walker.json_tuples)
 
         # Cleaning up methodfiles
         directory_walker.list_of_json_method_files = [x for x in directory_walker.list_of_json_method_files if isinstance(x, dict)]
@@ -94,6 +102,39 @@ if __name__ == '__main__':
         # Writing the results into a db
         sq3writer.insert_many_enums_from_soccminer_to_db(values=directory_walker.json_enum_tuples)
 
+        # Cleaning up filefiles
+        directory_walker.list_of_json_file_files = [x for x in directory_walker.list_of_json_file_files if isinstance(x, dict)]
+        directory_walker.list_of_json_file_files = [x for x in directory_walker.list_of_json_file_files if len(x) == 3]
+        directory_walker.dict_to_tuple(dictionary=directory_walker.list_of_json_file_files, type="file")
+        directory_walker.list_of_json_file_files = []
+        # Writing the results into a db
+        sq3writer.insert_many_files_from_soccminer_to_db(values=directory_walker.json_file_tuples)
+
+        # Cleaning up interfacefiles
+        directory_walker.list_of_json_interface_files = [x for x in directory_walker.list_of_json_interface_files if isinstance(x, dict)]
+        directory_walker.list_of_json_interface_files = [x for x in directory_walker.list_of_json_interface_files if len(x) == 6]
+        directory_walker.dict_to_tuple(dictionary=directory_walker.list_of_json_interface_files, type="interface")
+        directory_walker.list_of_json_interface_files = []
+        # Writing the results into a db
+        sq3writer.insert_many_interfaces_from_soccminer_to_db(values=directory_walker.json_interface_tuples)
+
+        # Cleaning up packagefiles
+        directory_walker.list_of_json_package_files = [x for x in directory_walker.list_of_json_package_files if isinstance(x, dict)]
+        directory_walker.list_of_json_package_files = [x for x in directory_walker.list_of_json_package_files if len(x) == 5]
+        directory_walker.dict_to_tuple(dictionary=directory_walker.list_of_json_package_files, type="package")
+        directory_walker.list_of_json_package_files = []
+        # Writing the results into a db
+        sq3writer.insert_many_packages_from_soccminer_to_db(values=directory_walker.json_package_tuples)
+
+        # Cleaning up staticblockfiles
+        directory_walker.list_of_json_staticblock_files = [x for x in directory_walker.list_of_json_staticblock_files if isinstance(x, dict)]
+        directory_walker.list_of_json_staticblock_files = [x for x in directory_walker.list_of_json_staticblock_files if len(x) == 3]
+        directory_walker.dict_to_tuple(dictionary=directory_walker.list_of_json_staticblock_files, type="staticblock")
+        directory_walker.list_of_json_staticblock_files = []
+        # Writing the results into a db
+        sq3writer.insert_many_staticblocks_from_soccminer_to_db(values=directory_walker.json_staticblock_tuples)
+
+
     elif analyzer == "pmd":
         with open(args.pmddir, 'r') as f:
             single_json = json.load(f)
@@ -103,6 +144,7 @@ if __name__ == '__main__':
             print(individual_file["filename"])
             individual_file["filename"] = re.sub(".*argouml-VERSION_0_34\\\\", "", individual_file["filename"])
             individual_file["filename"] = re.sub("\\\\", ".", individual_file["filename"])
+            logging.info("PMD file read")
     else:
         logging.info("Analyzer needs to be either 'soccminer' or 'pmd'.")
 

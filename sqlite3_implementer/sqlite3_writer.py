@@ -73,6 +73,36 @@ class SqliteWriter():
                     "Enum_Specifier text)")
         self._connection.commit()
 
+        cur.execute("CREATE TABLE if NOT EXISTS file(file_key integer PRIMARY KEY AUTOINCREMENT,"
+                    "File_Comments_Count int,"
+                    "File_LOC int,"
+                    "Source_File text)")
+        self._connection.commit()
+
+        cur.execute("CREATE TABLE if NOT EXISTS interface(interface_key integer PRIMARY KEY AUTOINCREMENT,"
+                    "Interface_LOC int,"
+                    "Interface_Line_No int,"
+                    "Interface_Name text,"
+                    "Interface_Signature text,"
+                    "Interface_Source_File text,"
+                    "Interface_Specifier text)")
+        self._connection.commit()
+
+        cur.execute("CREATE TABLE if NOT EXISTS package(package_key integer PRIMARY KEY AUTOINCREMENT,"
+                    "Package_LOC int,"
+                    "Package_Line_No int,"
+                    "Package_Name text,"
+                    "Package_Serialization_File_URL text,"
+                    "Package_Source_File text)")
+        self._connection.commit()
+
+        cur.execute("CREATE TABLE if NOT EXISTS staticblock(staticblock_key integer PRIMARY KEY AUTOINCREMENT,"
+                    "Static_Block_LOC int,"
+                    "Static_Block_Line_No int,"
+                    "Static_Block_Source_File text)")
+        self._connection.commit()
+
+
         cur.execute("CREATE TABLE if NOT EXISTS pmd(pmd_key integer PRIMARY KEY AUTOINCREMENT,"
                     "Filename text,"
                     "Begin_Line int,"
@@ -194,6 +224,21 @@ class SqliteWriter():
         except Exception as e:
             print(e)
         self.close_connection()
+
+    def insert_many_files_from_soccminer_to_db(self, values):
+        logging.info("Writing many files to db %s", (self._db_name,))
+        cur = self.connect_to_db().cursor()
+        # cur.executemany("INSERT into comments VALUES (?,?,?,?,?,?,?,?,?,?,?)", values)
+        try:
+            cur.executemany(
+                "INSERT into enum(File_Comments_Count,"
+                "File_LOC,"
+                "Source_File) VALUES (?,?,?)",
+                values)
+            self._connection.commit()
+        except Exception as e:
+            print(e)
+        self.close_connection()
     def insert_many_classes_from_soccminer_to_db(self, values):
         logging.info("Writing many classes to db %s", (self._db_name,))
         cur = self.connect_to_db().cursor()
@@ -212,6 +257,51 @@ class SqliteWriter():
             print(e)
         self.close_connection()
 
+    def insert_many_interfaces_from_soccminer_to_db(self, values):
+        logging.info("Writing many interfaces to db %s", (self._db_name,))
+        cur = self.connect_to_db().cursor()
+        # cur.executemany("INSERT into comments VALUES (?,?,?,?,?,?,?,?,?,?,?)", values)
+        try:
+            cur.executemany(
+                "INSERT into interface(Interface_LOC,"
+                "Interface_Line_No,"
+                "Interface_Name,"
+                "Interface_Signature,"
+                "Interface_Source_File,"
+                "Interface_Specifier) VALUES (?,?,?,?,?,?)",
+                values)
+            self._connection.commit()
+        except Exception as e:
+            print(e)
+        self.close_connection()
+
+    def insert_many_packages_from_soccminer_to_db(self, values):
+        logging.info("Writing many packages to db %s", (self._db_name,))
+        cur = self.connect_to_db().cursor()
+        # cur.executemany("INSERT into comments VALUES (?,?,?,?,?,?,?,?,?,?,?)", values)
+        try:
+            cur.executemany("INSERT into package(Package_LOC,"
+                            "Package_Line_No,"
+                            "Package_Name,"
+                            "Package_Serialization_File_URL,"
+                            "Package_Source_File) VALUES (?,?,?,?,?)""", values)
+            self._connection.commit()
+        except Exception as e:
+            print(e)
+        self.close_connection()
+
+    def insert_many_staticblocks_from_soccminer_to_db(self, values):
+        logging.info("Writing many staticblocks to db %s", (self._db_name,))
+        cur = self.connect_to_db().cursor()
+        # cur.executemany("INSERT into comments VALUES (?,?,?,?,?,?,?,?,?,?,?)", values)
+        try:
+            cur.executemany("INSERT into package(Static_Block_LOC,"
+                            "Static_Block_Line_No,"
+                            "Static_Block_Source_File) VALUES (?,?,?)""", values)
+            self._connection.commit()
+        except Exception as e:
+            print(e)
+        self.close_connection()
 
     def insert_many_json_from_pmd_to_db(self, values):
         logging.info("Writing many comments to db %s", (self._db_name,))
