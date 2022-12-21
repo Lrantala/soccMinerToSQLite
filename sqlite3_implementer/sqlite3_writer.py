@@ -104,6 +104,7 @@ class SqliteWriter():
 
 
         cur.execute("CREATE TABLE if NOT EXISTS pmd(pmd_key integer PRIMARY KEY AUTOINCREMENT,"
+                    "Project text,"
                     "Filename text,"
                     "Begin_Line int,"
                     "Begin_Column int,"
@@ -304,32 +305,24 @@ class SqliteWriter():
         self.close_connection()
 
     def insert_many_json_from_pmd_to_db(self, values):
-        logging.info("Writing many comments to db %s", (self._db_name,))
+        logging.info("Writing many pmd comments to db %s", (self._db_name,))
         cur = self.connect_to_db().cursor()
             # cur.executemany("INSERT into comments VALUES (?,?,?,?,?,?,?,?,?,?,?)", values)
         try:
             cur.executemany(
-                "INSERT into comments(Comment_Assoc_Block_Node,"
-                "Comment_Category,"
-                "Comment_Content,"
-                "Comment_First_Element_In,"
-                "Comment_Immediate_Preceding_Code,"
-                "Comment_Immediate_Succeeding_Code,"
-                "Comment_Last_Element_In,"
-                "Comment_Level,"
-                "Comment_Line_No,"
-                "Comment_Parent_Identifier,"
-                "Comment_Parent_Trace,"
-                "Comment_Preceding_Node,"
-                "Comment_Source_File,"
-                "Comment_SubCategory,"
-                "Comment_SubCatg_Type,"
-                "Comment_Succeeding_Node,"
-                "Comment_Type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                "INSERT into pmd(Project,"
+                "Filename,"
+                "Begin_Line,"
+                "Begin_Column,"
+                "End_Line,"
+                "End_Column,"
+                "Description,"
+                "Rule,"
+                "Rule_Set,"
+                "Priority,"
+                "External_Info_Url) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
                 values)
             self._connection.commit()
         except Exception as e:
             print(e)
         self.close_connection()
-
-

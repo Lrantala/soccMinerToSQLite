@@ -14,6 +14,10 @@ def argument_parser():
     parser.add_argument("-pd", "--pmddir",
                         help="Name of the path and file containing the json-file from pmd",
                         required=False)
+    parser.add_argument("-pp", "--pmdproject",
+                        help="Name of the project (directory name) analyzed with pmd",
+                        required=False)
+
     parser.add_argument("-m", "--multiple", action="store_true", required=False,
                         help="Add this, if you want to analyze multiple repositories, which are in the given path.")
     parser.add_argument("-v", "--verbose", action="store_true", help="Whether to display logging information.")
@@ -37,12 +41,12 @@ if __name__ == '__main__':
 
     analyzer = args.analyzer
 
+    sq3writer = SqliteWriter()
+    sq3writer.initialize_db()
+
     if analyzer == "soccminer":
         directory_walker = DirectoryWalker()
         directory_walker.list_directories_and_files(path_to_directory=args.soccdir)
-
-        sq3writer = SqliteWriter()
-        sq3writer.initialize_db()
 
         for file_location in directory_walker.list_of_dir_files:
             if "ClassInfo_attributes.json" in file_location:
@@ -139,12 +143,32 @@ if __name__ == '__main__':
         with open(args.pmddir, 'r') as f:
             single_json = json.load(f)
         pmd_list_of_files = single_json["files"]
+        project_name = args.pmdproject
         # Change the filenames to match the style in soccminer
+        tuple_list_of_pmd_info = []
+        logging.info("Starting to read PMD files")
         for individual_file in pmd_list_of_files:
-            print(individual_file["filename"])
-            individual_file["filename"] = re.sub(".*argouml-VERSION_0_34\\\\", "", individual_file["filename"])
+            individual_file["filename"] = re.sub(".*" + project_name + "\\\\", "", individual_file["filename"])
+            #individual_file["filename"] = re.sub(".*argouml-VERSION_0_34\\\\", "", individual_file["filename"])
             individual_file["filename"] = re.sub("\\\\", ".", individual_file["filename"])
-            logging.info("PMD file read")
+            for violation in individual_file["violations"]:
+                #individual_list_entry.append((individual_file["filename"], *list(violation.items())))
+                tuple_list_of_pmd_info.append((project_name,
+                                               individual_file["filename"],
+                                               violation["beginline"],
+                                               violation["begincolumn"],
+                                               violation["endline"],
+                                               violation["endcolumn"],
+                                               violation["description"],
+                                               violation["rule"],
+                                               violation["ruleset"],
+                                               violation["priority"],
+                                               violation["externalInfoUrl"]))
+        logging.info("PMD files read into a list of tuples.")
+
+        sq3writer.insert_many_json_from_pmd_to_db(tuple_list_of_pmd_info)
+
+
     else:
         logging.info("Analyzer needs to be either 'soccminer' or 'pmd'.")
 
