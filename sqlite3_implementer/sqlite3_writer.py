@@ -4,6 +4,7 @@ import sqlite3
 
 class SqliteWriter():
     def __init__(self):
+        self.pmd_project_id = None
         self._db_name = "./save/soccminer.db"
         self._connection = None
 
@@ -104,6 +105,7 @@ class SqliteWriter():
 
 
         cur.execute("CREATE TABLE if NOT EXISTS pmd(pmd_key integer PRIMARY KEY AUTOINCREMENT,"
+                    "Project_ID int,"
                     "Project text,"
                     "Filename text,"
                     "Begin_Line int,"
@@ -310,7 +312,8 @@ class SqliteWriter():
             # cur.executemany("INSERT into comments VALUES (?,?,?,?,?,?,?,?,?,?,?)", values)
         try:
             cur.executemany(
-                "INSERT into pmd(Project,"
+                "INSERT into pmd(Project_ID,"
+                "Project,"
                 "Filename,"
                 "Begin_Line,"
                 "Begin_Column,"
@@ -320,9 +323,20 @@ class SqliteWriter():
                 "Rule,"
                 "Rule_Set,"
                 "Priority,"
-                "External_Info_Url) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                "External_Info_Url) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
                 values)
             self._connection.commit()
         except Exception as e:
             print(e)
         self.close_connection()
+
+    def check_available_pmd_project_id(self):
+        logging.info("Checking what is the latest project id number")
+        cur = self.connect_to_db().cursor()
+        id_number_tuples = [id_number[0] for id_number in cur.execute("SELECT Project_ID FROM pmd")]
+        if id_number_tuples:
+            last_id = max(id_number_tuples)
+            last_id += 1
+            self.pmd_project_id = last_id
+        else:
+            self.pmd_project_id = 1

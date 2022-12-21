@@ -146,6 +146,8 @@ if __name__ == '__main__':
         project_name = args.pmdproject
         # Change the filenames to match the style in soccminer
         tuple_list_of_pmd_info = []
+        sq3writer.check_available_pmd_project_id()
+        pmd_project_id = sq3writer.pmd_project_id
         logging.info("Starting to read PMD files")
         for individual_file in pmd_list_of_files:
             individual_file["filename"] = re.sub(".*" + project_name + "\\\\", "", individual_file["filename"])
@@ -153,7 +155,8 @@ if __name__ == '__main__':
             individual_file["filename"] = re.sub("\\\\", ".", individual_file["filename"])
             for violation in individual_file["violations"]:
                 #individual_list_entry.append((individual_file["filename"], *list(violation.items())))
-                tuple_list_of_pmd_info.append((project_name,
+                tuple_list_of_pmd_info.append((pmd_project_id,
+                                               project_name,
                                                individual_file["filename"],
                                                violation["beginline"],
                                                violation["begincolumn"],
