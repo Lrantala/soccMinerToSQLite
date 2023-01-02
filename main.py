@@ -48,6 +48,9 @@ if __name__ == '__main__':
         directory_walker = DirectoryWalker()
         directory_walker.list_directories_and_files(path_to_directory=args.soccdir)
 
+        sq3writer.check_available_project_id(analyzer="socc")
+        socc_project_id = sq3writer.socc_project_id
+
         for file_location in directory_walker.list_of_dir_files:
             if "ClassInfo_attributes.json" in file_location:
                 with open(file_location, 'r') as f:
@@ -118,7 +121,12 @@ if __name__ == '__main__':
         # Cleaning up filefiles
         directory_walker.list_of_json_file_files = [x for x in directory_walker.list_of_json_file_files if isinstance(x, dict)]
         directory_walker.list_of_json_file_files = [x for x in directory_walker.list_of_json_file_files if len(x) == 3]
-        directory_walker.dict_to_tuple(dictionary=directory_walker.list_of_json_file_files, type="file")
+        #directory_walker.dict_to_tuple(dictionary=directory_walker.list_of_json_file_files, type="file")
+        # Add project id to the file-table in the database. Use the first int that hasn't been yet used.
+        directory_walker.json_file_tuples = [list(x.values()) for x in directory_walker.list_of_json_file_files]
+        for x in directory_walker.json_file_tuples:
+            x.insert(0, socc_project_id)
+        directory_walker.json_file_tuples = [tuple(x) for x in directory_walker.json_file_tuples]
         directory_walker.list_of_json_file_files = []
         # Writing the results into a db
         sq3writer.insert_many_files_from_soccminer_to_db(values=directory_walker.json_file_tuples)

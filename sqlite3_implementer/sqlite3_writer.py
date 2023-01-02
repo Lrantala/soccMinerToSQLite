@@ -76,6 +76,7 @@ class SqliteWriter():
         self._connection.commit()
 
         cur.execute("CREATE TABLE if NOT EXISTS file(file_key integer PRIMARY KEY AUTOINCREMENT,"
+                    "Project_ID int,"
                     "File_Comments_Count int,"
                     "File_LOC int,"
                     "Source_File text)")
@@ -235,9 +236,10 @@ class SqliteWriter():
         # cur.executemany("INSERT into comments VALUES (?,?,?,?,?,?,?,?,?,?,?)", values)
         try:
             cur.executemany(
-                "INSERT into file(File_Comments_Count,"
+                "INSERT into file(Project_ID,"
+                "File_Comments_Count,"
                 "File_LOC,"
-                "Source_File) VALUES (?,?,?)",
+                "Source_File) VALUES (?,?,?,?)",
                 values)
             self._connection.commit()
         except Exception as e:
@@ -343,11 +345,11 @@ class SqliteWriter():
             else:
                 self.pmd_project_id = 1
         else:
-            id_number_tuples = [id_number[0] for id_number in cur.execute("SELECT Project_ID FROM pmd")]
+            id_number_tuples = [id_number[0] for id_number in cur.execute("SELECT Project_ID FROM file")]
             if id_number_tuples:
                 last_id = max(id_number_tuples)
                 last_id += 1
-                self.pmd_project_id = last_id
+                self.socc_project_id = last_id
             else:
-                self.pmd_project_id = 1
+                self.socc_project_id = 1
 
