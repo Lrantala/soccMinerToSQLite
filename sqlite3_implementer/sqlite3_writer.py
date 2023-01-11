@@ -105,6 +105,12 @@ class SqliteWriter():
                     "Static_Block_Source_File text)")
         self._connection.commit()
 
+        cur.execute("CREATE TABLE if NOT EXISTS project(project_key integer PRIMARY KEY AUTOINCREMENT,"
+                    "Serialized_Mining_Level int,"
+                    "Serialized_Project_KLOC float,"
+                    "Serialized_Project_Name text)")
+        self._connection.commit()
+
         cur.execute("CREATE TABLE if NOT EXISTS pmd(pmd_key integer PRIMARY KEY AUTOINCREMENT,"
                     "Project_ID int,"
                     "Project text,"
@@ -345,29 +351,39 @@ class SqliteWriter():
             else:
                 self.pmd_project_id = 1
         else:
-            id_number_tuples = [id_number[0] for id_number in cur.execute("SELECT Project_ID FROM file")]
+            id_number_tuples = [id_number[0] for id_number in cur.execute("SELECT project_key FROM project")]
             if id_number_tuples:
                 last_id = max(id_number_tuples)
-                last_id += 1
                 self.socc_project_id = last_id
             else:
-                self.socc_project_id = 1
+                #self.socc_project_id = 1
+                logging.info("No project id found in table project")
 
     def check_if_project_exists(self, analyzer, name):
         logging.info("Checking if the project already exists")
         cur = self.connect_to_db().cursor()
         if analyzer == "pmd":
             project_names = [project[0] for project in cur.execute("SELECT DISTINCT Project FROM pmd")]
+        elif analyzer == "socc":
+            project_names = [project[0] for project in
+                             cur.execute("SELECT DISTINCT Serialized_Project_Name FROM project")]
             if project_names:
                 is_project_analyzed = name in project_names
                 return is_project_analyzed
             else:
                 return False
         else:
-            id_number_tuples = [id_number[0] for id_number in cur.execute("SELECT Project_ID FROM file")]
-            if id_number_tuples:
-                last_id = max(id_number_tuples)
-                last_id += 1
-                self.socc_project_id = last_id
-            else:
-                self.socc_project_id = 1
+            logging.info("Analyzer must be either socc or pmd")
+
+
+    def insert_single_project_from_soccminer_to_db(self, datafile=None):
+        logging.info("Reading a json to dictionary")
+        cur = self.connect_to_db().cursor()
+        cur.execute('INSERT INTO project(Serialized_Mining_Level,'
+                    'Serialized_Project_KLOC,'
+                    'Serialized_Project_Name) '
+                    'VALUES (:Serialized_Mining_Level,'
+                    ':Serialized_Project_KLOC,'
+                    ':Serialized_Project_Name)', datafile)
+        self._connection.commit()
+        self.close_connection()
