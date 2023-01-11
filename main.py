@@ -32,6 +32,36 @@ def argument_parser():
                         required=True)
     return parser
 
+def insert_pmd_to_db(pmd_location):
+    with open(pmd_location, 'r') as f:
+        single_json_pmd = json.load(f)
+    pmd_list_of_files = single_json_pmd["files"]
+    # Change the filenames to match the style in soccminer
+    tuple_list_of_pmd_info = []
+    sq3writer.check_available_project_id(analyzer="pmd")
+    pmd_project_id = sq3writer.pmd_project_id
+    logging.info("Starting to read PMD files")
+    for individual_file in pmd_list_of_files:
+        individual_file["filename"] = re.sub(".*" + project_name + "\\\\", "", individual_file["filename"])
+        # individual_file["filename"] = re.sub(".*argouml-VERSION_0_34\\\\", "", individual_file["filename"])
+        individual_file["filename"] = re.sub("\\\\", ".", individual_file["filename"])
+        for violation in individual_file["violations"]:
+            # individual_list_entry.append((individual_file["filename"], *list(violation.items())))
+            tuple_list_of_pmd_info.append((pmd_project_id,
+                                           project_name,
+                                           individual_file["filename"],
+                                           violation["beginline"],
+                                           violation["begincolumn"],
+                                           violation["endline"],
+                                           violation["endcolumn"],
+                                           violation["description"],
+                                           violation["rule"],
+                                           violation["ruleset"],
+                                           violation["priority"],
+                                           violation["externalInfoUrl"]))
+    logging.info("PMD files read into a list of tuples.")
+    sq3writer.insert_many_json_from_pmd_to_db(tuple_list_of_pmd_info)
+
 
 if __name__ == '__main__':
     parser = argument_parser()
@@ -154,41 +184,17 @@ if __name__ == '__main__':
         directory_walker.list_of_json_staticblock_files = []
         # Writing the results into a db
         sq3writer.insert_many_staticblocks_from_soccminer_to_db(values=directory_walker.json_staticblock_tuples)
-
-
+        
     elif analyzer == "pmd":
-        with open(args.pmddir, 'r') as f:
-            single_json = json.load(f)
-        pmd_list_of_files = single_json["files"]
         project_name = args.pmdproject
-        # Change the filenames to match the style in soccminer
-        tuple_list_of_pmd_info = []
-        sq3writer.check_available_project_id(analyzer="pmd")
-        pmd_project_id = sq3writer.pmd_project_id
-        logging.info("Starting to read PMD files")
-        for individual_file in pmd_list_of_files:
-            individual_file["filename"] = re.sub(".*" + project_name + "\\\\", "", individual_file["filename"])
-            #individual_file["filename"] = re.sub(".*argouml-VERSION_0_34\\\\", "", individual_file["filename"])
-            individual_file["filename"] = re.sub("\\\\", ".", individual_file["filename"])
-            for violation in individual_file["violations"]:
-                #individual_list_entry.append((individual_file["filename"], *list(violation.items())))
-                tuple_list_of_pmd_info.append((pmd_project_id,
-                                               project_name,
-                                               individual_file["filename"],
-                                               violation["beginline"],
-                                               violation["begincolumn"],
-                                               violation["endline"],
-                                               violation["endcolumn"],
-                                               violation["description"],
-                                               violation["rule"],
-                                               violation["ruleset"],
-                                               violation["priority"],
-                                               violation["externalInfoUrl"]))
-        logging.info("PMD files read into a list of tuples.")
-
-        sq3writer.insert_many_json_from_pmd_to_db(tuple_list_of_pmd_info)
-
-
+        # Check if the project already exists:
+        is_project_analyzed = sq3writer.check_if_project_exists(analyzer="pmd", name=project_name)
+        if is_project_analyzed:
+            logging.info("Project has already been analyzed, aborting.")
+        else:
+            insert_pmd_to_db(pmd_location=args.pmddir)
     else:
         logging.info("Analyzer needs to be either 'soccminer' or 'pmd'.")
+
+
 

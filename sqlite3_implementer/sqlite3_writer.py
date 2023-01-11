@@ -105,7 +105,6 @@ class SqliteWriter():
                     "Static_Block_Source_File text)")
         self._connection.commit()
 
-
         cur.execute("CREATE TABLE if NOT EXISTS pmd(pmd_key integer PRIMARY KEY AUTOINCREMENT,"
                     "Project_ID int,"
                     "Project text,"
@@ -126,39 +125,39 @@ class SqliteWriter():
         logging.info("Reading a json to dictionary %s", datafile)
         cur = self.connect_to_db().cursor()
         cur.execute('INSERT INTO comment (Comment_Assoc_Block_Node,'
-                        'Comment_Category,'
-                        'Comment_Content,'
-                        'Comment_First_Element_In,'
-                        'Comment_Immediate_Preceding_Code,'
-                        'Comment_Immediate_Succeeding_Code,'
-                        'Comment_Last_Element_In,'
-                        'Comment_Level,'
-                        'Comment_Line_No,'
-                        'Comment_Parent_Identifier,'
-                        'Comment_Parent_Trace,'
-                        'Comment_Preceding_Node,'
-                        'Comment_Source_File,'
-                        'Comment_SubCategory,'
-                        'Comment_SubCatg_Type,'
-                        'Comment_Succeeding_Node,'
-                        'Comment_Type) '
-                         'VALUES (:Comment_Assoc_Block_Node,'
-                        ':Comment_Category,'
-                        ':Comment_Content,'
-                        ':Comment_First_Element_In,'
-                        ':Comment_Immediate_Preceding_Code,'
-                        ':Comment_Immediate_Succeeding_Code,'
-                        ':Comment_Last_Element_In,'
-                        ':Comment_Level,'
-                        ':Comment_Line_No,'
-                        ':Comment_Parent_Identifier,'
-                        ':Comment_Parent_Trace,'
-                        ':Comment_Preceding_Node,'
-                        ':Comment_Source_File,'
-                        ':Comment_SubCategory,'
-                        ':Comment_SubCatg_Type,'
-                        ':Comment_Succeeding_Node,'
-                        ':Comment_Type)', datafile)
+                    'Comment_Category,'
+                    'Comment_Content,'
+                    'Comment_First_Element_In,'
+                    'Comment_Immediate_Preceding_Code,'
+                    'Comment_Immediate_Succeeding_Code,'
+                    'Comment_Last_Element_In,'
+                    'Comment_Level,'
+                    'Comment_Line_No,'
+                    'Comment_Parent_Identifier,'
+                    'Comment_Parent_Trace,'
+                    'Comment_Preceding_Node,'
+                    'Comment_Source_File,'
+                    'Comment_SubCategory,'
+                    'Comment_SubCatg_Type,'
+                    'Comment_Succeeding_Node,'
+                    'Comment_Type) '
+                    'VALUES (:Comment_Assoc_Block_Node,'
+                    ':Comment_Category,'
+                    ':Comment_Content,'
+                    ':Comment_First_Element_In,'
+                    ':Comment_Immediate_Preceding_Code,'
+                    ':Comment_Immediate_Succeeding_Code,'
+                    ':Comment_Last_Element_In,'
+                    ':Comment_Level,'
+                    ':Comment_Line_No,'
+                    ':Comment_Parent_Identifier,'
+                    ':Comment_Parent_Trace,'
+                    ':Comment_Preceding_Node,'
+                    ':Comment_Source_File,'
+                    ':Comment_SubCategory,'
+                    ':Comment_SubCatg_Type,'
+                    ':Comment_Succeeding_Node,'
+                    ':Comment_Type)', datafile)
         self._connection.commit()
         self.close_connection()
 
@@ -245,6 +244,7 @@ class SqliteWriter():
         except Exception as e:
             print(e)
         self.close_connection()
+
     def insert_many_classes_from_soccminer_to_db(self, values):
         logging.info("Writing many classes to db %s", (self._db_name,))
         cur = self.connect_to_db().cursor()
@@ -312,7 +312,7 @@ class SqliteWriter():
     def insert_many_json_from_pmd_to_db(self, values):
         logging.info("Writing many pmd comments to db %s", (self._db_name,))
         cur = self.connect_to_db().cursor()
-            # cur.executemany("INSERT into comments VALUES (?,?,?,?,?,?,?,?,?,?,?)", values)
+        # cur.executemany("INSERT into comments VALUES (?,?,?,?,?,?,?,?,?,?,?)", values)
         try:
             cur.executemany(
                 "INSERT into pmd(Project_ID,"
@@ -353,3 +353,21 @@ class SqliteWriter():
             else:
                 self.socc_project_id = 1
 
+    def check_if_project_exists(self, analyzer, name):
+        logging.info("Checking if the project already exists")
+        cur = self.connect_to_db().cursor()
+        if analyzer == "pmd":
+            project_names = [project[0] for project in cur.execute("SELECT DISTINCT Project FROM pmd")]
+            if project_names:
+                is_project_analyzed = name in project_names
+                return is_project_analyzed
+            else:
+                return False
+        else:
+            id_number_tuples = [id_number[0] for id_number in cur.execute("SELECT Project_ID FROM file")]
+            if id_number_tuples:
+                last_id = max(id_number_tuples)
+                last_id += 1
+                self.socc_project_id = last_id
+            else:
+                self.socc_project_id = 1
