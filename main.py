@@ -87,6 +87,37 @@ if __name__ == '__main__':
                     json_data = json.load(f)
                     for item in json_data:
                         directory_walker.list_of_json_class_files.append(item)
+            elif "EnumInfo_attributes.json" in file_location:
+                with open(file_location, 'r') as f:
+                    json_data = json.load(f)
+                    for item in json_data:
+                        directory_walker.list_of_json_enum_files.append(item)
+            elif "FileInfo_attributes.json" in file_location:
+                with open(file_location, 'r') as f:
+                    json_data = json.load(f)
+                    for item in json_data:
+                        directory_walker.list_of_json_file_files.append(item)
+            elif "InterfaceInfo_attributes.json" in file_location:
+                with open(file_location, 'r') as f:
+                    json_data = json.load(f)
+                    for item in json_data:
+                        directory_walker.list_of_json_interface_files.append(item)
+            elif "MethodInfo_attributes.json" in file_location:
+                with open(file_location, 'r') as f:
+                    json_data = json.load(f)
+                    for item in json_data:
+                        directory_walker.list_of_json_method_files.append(item)
+            elif "PackageInfo_attributes.json" in file_location:
+                with open(file_location, 'r') as f:
+                    json_data = json.load(f)
+                    for item in json_data:
+                        directory_walker.list_of_json_package_files.append(item)
+            elif "StaticBlockInfo_attributes.json" in file_location:
+                with open(file_location, 'r') as f:
+                    json_data = json.load(f)
+                    for item in json_data:
+                        directory_walker.list_of_json_staticblock_files.append(item)
+
             else:
                 with open(file_location, 'r') as f:
                     single_json = json.load(f)
@@ -95,24 +126,6 @@ if __name__ == '__main__':
                         if "Comment_Category" in first_in_single_json:
                             for item in single_json:
                                 directory_walker.list_of_json_files.append(item)
-                        elif "Method_Category" in first_in_single_json:
-                            for item in single_json:
-                                directory_walker.list_of_json_method_files.append(item)
-                        elif "Enum_Signature" in first_in_single_json:
-                            for item in single_json:
-                                directory_walker.list_of_json_enum_files.append(item)
-                        elif "File_Comments_Count" in first_in_single_json:
-                            for item in single_json:
-                                directory_walker.list_of_json_file_files.append(item)
-                        elif "Interface_Signature" in first_in_single_json:
-                            for item in single_json:
-                                directory_walker.list_of_json_interface_files.append(item)
-                        elif "Package_Serialization_File_URL" in first_in_single_json:
-                            for item in single_json:
-                                directory_walker.list_of_json_package_files.append(item)
-                        elif "Static_Block_Source_File" in first_in_single_json:
-                            for item in single_json:
-                                directory_walker.list_of_json_staticblock_files.append(item)
 
         # Cleaning up the unnecessasry json-data files, keeping only the ones with the comments.
         directory_walker.list_of_json_files = [x for x in directory_walker.list_of_json_files if isinstance(x, dict)]
