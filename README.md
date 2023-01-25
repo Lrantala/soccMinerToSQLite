@@ -2,7 +2,7 @@
 
 This program saves the JSON-data mined with Soccminer-tool (https://github.com/M3SOulu/soccminer) to a SQLite database.
 
-Currently accepts only data mined at "comprehensive_commit"-level, and saves this comment data to a SQLite database.
+Currently accepts only data mined at "all"-level, and saves this comment data to a SQLite database.
 
 <h3>Parameters</h3>
 
