@@ -32,23 +32,21 @@ def argument_parser():
                         required=True)
     return parser
 
-def insert_pmd_to_db(pmd_location):
+def insert_pmd_to_db(pmd_location, pmd_project_name):
     with open(pmd_location, 'r') as f:
         single_json_pmd = json.load(f)
     pmd_list_of_files = single_json_pmd["files"]
     # Change the filenames to match the style in soccminer
     tuple_list_of_pmd_info = []
-    sq3writer.check_available_project_id(analyzer="pmd")
+    sq3writer.check_available_project_id(analyzer="pmd", project_name=pmd_project_name)
     pmd_project_id = sq3writer.pmd_project_id
     logging.info("Starting to read PMD files")
     for individual_file in pmd_list_of_files:
         individual_file["filename"] = re.sub(".*" + project_name + "\\\\", "", individual_file["filename"])
-        # individual_file["filename"] = re.sub(".*argouml-VERSION_0_34\\\\", "", individual_file["filename"])
         individual_file["filename"] = re.sub("\\\\", ".", individual_file["filename"])
         for violation in individual_file["violations"]:
-            # individual_list_entry.append((individual_file["filename"], *list(violation.items())))
             tuple_list_of_pmd_info.append((pmd_project_id,
-                                           project_name,
+                                           pmd_project_name,
                                            individual_file["filename"],
                                            violation["beginline"],
                                            violation["begincolumn"],
@@ -63,7 +61,7 @@ def insert_pmd_to_db(pmd_location):
     sq3writer.insert_many_json_from_pmd_to_db(tuple_list_of_pmd_info)
 
 
-def insert_socc_to_db(socc_location):
+def insert_socc_to_db(socc_location, socc_project_name):
     global directory_walker
     directory_walker = DirectoryWalker()
     directory_walker.list_directories_and_files(path_to_directory=socc_location)
@@ -72,7 +70,7 @@ def insert_socc_to_db(socc_location):
             with open(file_location, 'r') as f:
                 json_data = json.load(f)
                 sq3writer.insert_single_project_from_soccminer_to_db(datafile=json_data)
-                sq3writer.check_available_project_id(analyzer="socc")
+                sq3writer.check_available_project_id(analyzer="socc", project_name=socc_project_name)
                 socc_project_id = sq3writer.socc_project_id
         elif "ClassInfo_attributes.json" in file_location:
             with open(file_location, 'r') as f:
@@ -211,7 +209,7 @@ if __name__ == '__main__':
         if is_project_analyzed:
             logging.info("Project has already been analyzed with Soccminer, aborting.")
         else:
-            insert_socc_to_db(socc_location=args.soccdir)
+            insert_socc_to_db(socc_location=args.soccdir, socc_project_name=socc_project)
 
     elif analyzer == "pmd":
         project_name = args.pmdproject
@@ -220,7 +218,7 @@ if __name__ == '__main__':
         if is_project_analyzed:
             logging.info("Project has already been analyzed, aborting.")
         else:
-            insert_pmd_to_db(pmd_location=args.pmddir)
+            insert_pmd_to_db(pmd_location=args.pmddir, pmd_project_name=project_name)
     else:
         logging.info("Analyzer needs to be either 'soccminer' or 'pmd'.")
 

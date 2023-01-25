@@ -339,17 +339,22 @@ class SqliteWriter():
             print(e)
         self.close_connection()
 
-    def check_available_project_id(self, analyzer):
+    def check_available_project_id(self, analyzer, project_name):
         logging.info("Checking what is the latest project id number")
         cur = self.connect_to_db().cursor()
         if analyzer == "pmd":
-            id_number_tuples = [id_number[0] for id_number in cur.execute("SELECT Project_ID FROM pmd")]
-            if id_number_tuples:
-                last_id = max(id_number_tuples)
-                last_id += 1
-                self.pmd_project_id = last_id
-            else:
-                self.pmd_project_id = 1
+            # First checking the project key from Soccminer and assigning that if it exists
+            try:
+                last_id = cur.execute("SELECT project_key "
+                                                                         "FROM project "
+                                                                         "WHERE Serialized_Project_Name like ?",
+                                                                         (project_name,)).fetchone()[0]
+                if last_id:
+                    self.pmd_project_id = last_id
+                else:
+                    logging.info("Project not analyzed by Soccminer")
+            except TypeError as e:
+                logging.info(e)
         else:
             id_number_tuples = [id_number[0] for id_number in cur.execute("SELECT project_key FROM project")]
             if id_number_tuples:
@@ -359,7 +364,7 @@ class SqliteWriter():
                 #self.socc_project_id = 1
                 logging.info("No project id found in table project")
 
-    def check_if_project_exists(self, analyzer, name):
+    def check_if_project_exists(self, analyzer, name=None):
         logging.info("Checking if the project already exists")
         cur = self.connect_to_db().cursor()
         if analyzer == "pmd":
@@ -367,13 +372,15 @@ class SqliteWriter():
         elif analyzer == "socc":
             project_names = [project[0] for project in
                              cur.execute("SELECT DISTINCT Serialized_Project_Name FROM project")]
-            if project_names:
-                is_project_analyzed = name in project_names
-                return is_project_analyzed
-            else:
-                return False
         else:
             logging.info("Analyzer must be either socc or pmd")
+
+        if project_names:
+            is_project_analyzed = name in project_names
+            return is_project_analyzed
+        else:
+            return False
+
 
 
     def insert_single_project_from_soccminer_to_db(self, datafile=None):
